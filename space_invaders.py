@@ -106,7 +106,7 @@ class Player(Ship):
 
     def draw(self, window):
         super().draw(window)
-        self.healthbar(window)
+        self.health_bar(window)
 
     def move_lasers(self, vel, objs):
         self.cooldown()
@@ -120,12 +120,13 @@ class Player(Ship):
                         objs.remove(obj)
                         self.lasers.remove(laser)
 
-    def healthbar(self, window):
+    def health_bar(self, window):
         pygame.draw.rect(window, (255, 0, 0),
                          (self.x, self.y + self.ship_img.get_height() + 10, self.ship_img.get_width(), 10))
         pygame.draw.rect(window, (0, 255, 0),
                          (self.x, self.y + self.ship_img.get_height() + 10,
-                          self.ship_img.get_width() * self.health/self.max_health, 10))
+                         health_percentage(self.health, self.max_health, self.ship_img.get_width()),
+                          10))
 
 
 class Enemy(Ship):
@@ -157,14 +158,18 @@ def collide(obj1, obj2):
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) is not None
 
 
-def main():
+def health_percentage(health, max_health, width):
+    return width * health / max_health if (width * health / max_health) > 0 else 0
+
+
+def play():
     FPS = 30
     clock = pygame.time.Clock()
 
     run = True
     lost = False
     level = 0
-    lives = 5
+    lives = 1
     player_velocity = 5
     laser_velocity = 6
 
@@ -184,16 +189,17 @@ def main():
         level_label = main_font.render(f" Level: {level}", 1, (255, 255, 255))
         WINDOW.blit(lives_label, (10, 10))
         WINDOW.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
+        #  draw player
+        player.draw(WINDOW)
         #  draw enemies
         for enemy in enemies:
             enemy.draw(WINDOW)
-        #  draw player
-        player.draw(WINDOW)
 
         if lost:
             # show you loser screen on top of screen
             lost_label = lost_font.render("You lost!!!", 1, (255, 255, 255))
             WINDOW.blit(lost_label, (WIDTH / 2 - lost_label.get_width() / 2, 300))
+            # TODO: stop the game/ go to start a new game
 
         pygame.display.update()
 
@@ -267,7 +273,7 @@ def main_menu():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                main()
+                play()
 
     pygame.quit()
 
